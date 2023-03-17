@@ -1,18 +1,19 @@
 import { User, Exercise } from './models.js'
+import db from './db.js'
 
 const getUserByName = async (username) => {    
   return await User.findOne({username: username});   
 };
 
-const getUserById = async (userId) => {    
+/*const getUserById = async (userId) => {
   return await User.findById(userId).populate('exercises').exec();
-}
+}*/
 
 const getUsers = async () => {
   return await User.find().exec();
 }
 
-const getExcercisesForUser = async (userId, fromDate, toDate, limit) => {    
+const getExercisesForUser = async (userId, fromDate, toDate, limit) => {
     if(!userId) throw new Error("userId is required");
 
     const query = User.findById(userId).populate({
@@ -51,7 +52,7 @@ const createUser = async (username) => {
     let user = await getUserByName(username);
     if (user != null) {
         throw new Error(`A User with the username ${username} already exists.`)
-    };
+    }
 
     user = new User({
         username: username
@@ -66,24 +67,34 @@ const createExercise = async (userId, description, duration, date) => {
     if(!duration) throw new Error("duration is required");
     if(!date) throw new Error("date is required");
 
-    const exercise = new Exercise({
-        user: userId,
-        description: description,
-        duration: duration,
-        date:date
-    })
-    await exercise.save();
-
-    const user = await getUserById(userId);
-    const json = JSON.stringify(user);
-    return user;
+    const session = await db.startSession();
+    session.startTransaction();
+    try {
+        const exercise = new Exercise({
+            user: userId,
+            description: description,
+            duration: duration,
+            date:date
+        })
+        await exercise.save({ session });
+        const user = await User.findById(userId);
+        user.exercises.push(exercise._id);
+        await user.save();
+        await session.commitTransaction();
+        return user;
+    } catch (err) {
+        await session.abortTransaction();
+        console.error(err);
+    } finally {
+        session.endSession();
+    }
 };
 
-const db = { 
-    getExcercisesForUser,     
+const dbAccess = {
+    getExercisesForUser,
     getUsers,
     createExercise,
     createUser
 };
 
-export default db;
+export default dbAccess;

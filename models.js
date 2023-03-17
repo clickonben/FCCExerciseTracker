@@ -1,17 +1,6 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-dotenv.config();
+import db from './db.js'
 
-(async () => {
-    try {
-      await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })  ;
-      console.log("connected to database succesfully");
-    } catch (error) {
-      console.log("failed to connect to database", error);
-    }
-})();
-
-const exerciseSchema = new mongoose.Schema({    
+const exerciseSchema = new db.Schema({
     description: {
         type: String,
         required: true
@@ -25,20 +14,23 @@ const exerciseSchema = new mongoose.Schema({
         required: true
     },
     user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: db.Schema.Types.ObjectId,
         ref: 'User'
       }
-}); 
+});
 
-const userSchema = new mongoose.Schema({
+const userSchema = new db.Schema({
     username: {
         type: String,
         required: true
     },
-    excercises: [exerciseSchema]
+    exercises: [{
+        type: db.Schema.Types.ObjectId,
+        ref: 'Exercise'
+    }]
 });
 
-const Exercise = mongoose.model("Exercise", exerciseSchema);
-const User = mongoose.model("User", userSchema);
+const Exercise = db.model("Exercise", exerciseSchema);
+const User = db.model("User", userSchema);
 
 export { Exercise, User };
