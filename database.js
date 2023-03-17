@@ -1,15 +1,19 @@
 import { User, Exercise } from './models.js'
 
 const getUserByName = async (username) => {    
-    try {
-        return await User.findOne({username: username});   
-    } catch (error) {
-        throw error;
-    }    
+  return await User.findOne({username: username});   
 };
 
+const getUserById = async (userId) => {    
+  return await User.findById(userId).populate('exercises').exec();
+}
+
+const getUsers = async () => {
+  return await User.find().exec();
+}
+
 const getExcercisesForUser = async (userId, fromDate, toDate, limit) => {    
-    if(!userId) throw new Error("query.userId is required");
+    if(!userId) throw new Error("userId is required");
 
     const query = User.findById(userId).populate({
         path: 'exercises',
@@ -68,12 +72,16 @@ const createExercise = async (userId, description, duration, date) => {
         duration: duration,
         date:date
     })
+    await exercise.save();
 
-    return await exercise.save();
+    const user = await getUserById(userId);
+    const json = JSON.stringify(user);
+    return user;
 };
 
 const db = { 
     getExcercisesForUser,     
+    getUsers,
     createExercise,
     createUser
 };
