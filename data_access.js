@@ -79,12 +79,12 @@ const createExercise = async (userId, description, duration, date) => {
         await exercise.save({ session });
         const user = await User.findById(userId);
         user.exercises.push(exercise._id);
-        await user.save();
+        await user.save({ session });
         await session.commitTransaction();
         return user;
     } catch (err) {
         await session.abortTransaction();
-        console.error(err);
+        throw err;
     } finally {
         session.endSession();
     }
