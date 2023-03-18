@@ -20,17 +20,17 @@ const getExercisesForUser = async (userId, fromDate, toDate, limit) => {
       if (fromDate && toDate) {
         query.populate({
           path: 'log',
-          match: { date: { $gte: fromDate, $lte: toDate } }
+          match: { _date: { $gte: fromDate, $lte: toDate } }
         });
       } else if (fromDate) {
         query.populate({
           path: 'log',
-          match: { date: { $gte: fromDate } }
+          match: { _date: { $gte: fromDate } }
         });
       } else if (toDate) {
         query.populate({
           path: 'log',
-          match: { date: { $lte: toDate } }
+          match: { _date: { $lte: toDate } }
         });
       }
       
