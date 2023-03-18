@@ -1,48 +1,42 @@
 import { User, Exercise } from './models.js'
 
 const getUserByName = async (username) => {    
-  return await User.findOne({username: username}).exec();
+  return await User.findOne({username: username}).populate('log');
 };
 
 const getUserById = async (userId) => {
-  return await User.findById(userId).populate({ path: 'exercises' }).exec();
+  return await User.findById(userId).populate('log');
 }
 
 const getUsers = async () => {
-  return await User.find().populate({
-      path: 'exercises',
-      options: {}
-  }).exec();
+  return await User.find().populate('log');  
 }
 
 const getExercisesForUser = async (userId, fromDate, toDate, limit) => {
     if(!userId) throw new Error("userId is required");
 
-    const query = User.findById(userId).populate({
-        path: 'exercises',
-        options: {}
-      });
+    const query = User.findById(userId).populate('log');      
       
       if (fromDate && toDate) {
         query.populate({
-          path: 'exercises',
+          path: 'log',
           match: { date: { $gte: fromDate, $lte: toDate } }
         });
       } else if (fromDate) {
         query.populate({
-          path: 'exercises',
+          path: 'log',
           match: { date: { $gte: fromDate } }
         });
       } else if (toDate) {
         query.populate({
-          path: 'exercises',
+          path: 'log',
           match: { date: { $lte: toDate } }
         });
       }
       
       if (limit) {
         query.populate({
-          path: 'exercises',
+          path: 'log',
           options: { limit }
         });
       }
@@ -73,7 +67,7 @@ const createExercise = async (userId, description, duration, date) => {
         user: userId,
         description: description,
         duration: duration,
-        date:date
+        _date:date
     })
     await exercise.save();
 
