@@ -19,18 +19,20 @@ const exerciseSchema = new db.Schema({
       }
 });
 
+const Exercise = db.model("Exercise", exerciseSchema);
+
 const userSchema = new db.Schema({
     username: {
         type: String,
         required: true
-    },
-    exercises: [{
-        type: db.Schema.Types.ObjectId,
-        ref: 'Exercise'
-    }]
+    }
 });
 
-const Exercise = db.model("Exercise", exerciseSchema);
+userSchema.virtual('exercises', {
+    ref:'Exercise',
+    localField: '_id',
+    foreignField: 'user'
+})
 const User = db.model("User", userSchema);
 
 export { Exercise, User };

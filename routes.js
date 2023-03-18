@@ -27,7 +27,7 @@ app.route('/api/users/').post( async (req, res) => {
 })
 
 app.get('/api/users/:_id/logs', async (req, res) => {
-    const user = await dbAccess.getExercisesForUser(req.params._id, req.body.from, req.body.to, req.body.limit);
+    const user = await dbAccess.getExercisesForUser(req.params._id, req.query.from, req.query.to, req.query.limit);
     res.json(user);    
 })
 

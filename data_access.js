@@ -1,16 +1,18 @@
 import { User, Exercise } from './models.js'
-import db from './db.js'
 
 const getUserByName = async (username) => {    
-  return await User.findOne({username: username});   
+  return await User.findOne({username: username}).exec();
 };
 
-/*const getUserById = async (userId) => {
-  return await User.findById(userId).populate('exercises').exec();
-}*/
+const getUserById = async (userId) => {
+  return await User.findById(userId).populate({ path: 'exercises' }).exec();
+}
 
 const getUsers = async () => {
-  return await User.find().exec();
+  return await User.find().populate({
+      path: 'exercises',
+      options: {}
+  }).exec();
 }
 
 const getExercisesForUser = async (userId, fromDate, toDate, limit) => {
@@ -67,27 +69,15 @@ const createExercise = async (userId, description, duration, date) => {
     if(!duration) throw new Error("duration is required");
     if(!date) throw new Error("date is required");
 
-    const session = await db.startSession();
-    session.startTransaction();
-    try {
-        const exercise = new Exercise({
-            user: userId,
-            description: description,
-            duration: duration,
-            date:date
-        })
-        await exercise.save({ session });
-        const user = await User.findById(userId);
-        user.exercises.push(exercise._id);
-        await user.save({ session });
-        await session.commitTransaction();
-        return user;
-    } catch (err) {
-        await session.abortTransaction();
-        throw err;
-    } finally {
-        session.endSession();
-    }
+    const exercise = new Exercise({
+        user: userId,
+        description: description,
+        duration: duration,
+        date:date
+    })
+    await exercise.save();
+
+    return await getUserById(userId);
 };
 
 const dbAccess = {
