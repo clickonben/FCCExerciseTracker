@@ -8,7 +8,7 @@ app.use(cors())
 app.use(express.static('public'))
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  if(process?.env?.ENVIRONMENT === 'DEV') {
+  if(process?.env?.NODE_ENV === 'development') {
     res.status(500).send(err.stack);
   }
   else {
